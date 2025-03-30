@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>绿色贷款智能鉴定系统</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <h1><i class="fas fa-leaf"></i> 绿色贷款智鉴宝</h1>
+      <p class="subtitle">智能审核 · 专业分析 · 快速响应</p>
+    </header>
+
+    <main>
+      <section class="file-upload">
+        <h2><i class="fas fa-file-upload"></i> 文件上传审核</h2>
+        <div class="upload-area" id="upload-area">
+          <div class="upload-content">
+            <label class="upload-label" for="file-input">
+              <i class="fas fa-cloud-upload-alt"></i>
+              <span>点击上传文件</span>
+              <span class="or">或</span>
+              <span>拖拽文件到此处</span>
+            </label>
+            <input type="file" id="file-input" accept=".doc,.docx,.pdf,.txt">
+            <div id="file-details" class="file-details" style="display: none;">
+              <p><i class="fas fa-file"></i>文件名：<span id="file-name"></span></p>
+              <p><i class="fas fa-weight"></i>大小：<span id="file-size"></span></p>
+              <button class="primary-btn" onclick="startAudit()">
+                <i class="fas fa-check"></i>开始审核
+              </button>
+            </div>
+          </div>
+          <div class="file-types">支持 .doc, .docx, .pdf, .txt 格式</div>
+        </div>
+      </section>
+
+      <section class="results-section">
+        <div class="tab-header">
+          <button class="tab-btn active" data-tab="review-tab">
+            <i class="fas fa-clipboard-check"></i> 审核报告
+          </button>
+          <button class="tab-btn" data-tab="chat-tab">
+            <i class="fas fa-comments"></i> 智能咨询
+          </button>
+        </div>
+
+        <div id="review-tab" class="tab-content active">
+          <div id="review-result" class="hidden">
+            <h3><i class="fas fa-clipboard-check"></i> 审核结果</h3>
+            <div class="result-card">
+              <div id="result-content"></div>
+              <div class="action-buttons fixed-bottom-right">
+                <button id="ask-more-btn" class="secondary-btn">
+                  <i class="fas fa-question-circle"></i> 询问AI更多建议
+                </button>
+                <button id="export-btn" class="secondary-btn">
+                  <i class="fas fa-download"></i> 导出报告
+                </button>
+              </div>
+            </div>
+          </div>
+          <div id="no-review-yet" class="empty-state">
+            <div class="empty-icon">
+              <i class="fas fa-file-alt"></i>
+            </div>
+            <h3>暂无审核报告</h3>
+            <p>请上传文件进行审核，审核结果将在这里显示</p>
+          </div>
+        </div>
+
+        <div id="chat-tab" class="tab-content">
+          <div class="chat-header">
+            <span class="status-indicator">
+              <i class="fas fa-circle"></i> 在线
+            </span>
+          </div>
+          <div class="chat-box" id="chat-box">
+            <div class="chat-message bot-message">
+              <div class="message-avatar">
+                <i class="fas fa-robot"></i>
+              </div>
+              <div class="message-content">
+                <p>您好！我是绿色贷款智鉴宝的AI助手，很高兴为您服务。您可以：</p>
+                <p><a href="#">上传文件进行智能审核</a></p>
+                <p><a href="#">询问关于绿色贷款的问题</a></p>
+                <p><a href="#">获取专业建议和指导</a></p>
+              </div>
+            </div>
+          </div>
+          <div class="chat-input">
+            <input type="text" id="message-input" placeholder="输入您的问题...">
+            <button id="send-btn" class="primary-btn">
+              <i class="fas fa-paper-plane"></i> 发送
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="footer-content">
+        <p>© 2025 绿色贷款智能鉴定系统</p>
+        <div class="footer-links">
+          <a href="#"><i class="fas fa-info-circle"></i> 关于我们</a>
+          <a href="#"><i class="fas fa-shield-alt"></i> 隐私政策</a>
+          <a href="#"><i class="fas fa-headset"></i> 联系我们</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- 审核流程模态框 -->
+  <div id="auditProgressModal" class="audit-modal hidden">
+    <div class="audit-modal-content">
+      <div class="audit-header">
+        <h2><i class="fas fa-clipboard-check"></i> 绿色贷款审核流程</h2>
+        <button class="close-btn" id="closeAuditModal">&times;</button>
+      </div>
+      <div class="audit-body">
+        <div class="progress-steps">
+          <div class="progress-step active" id="step-upload">
+            <div class="step-icon"><i class="fas fa-file-upload"></i></div>
+            <div class="step-label">文件上传</div>
+            <div class="step-status">处理中...</div>
+          </div>
+          <div class="progress-step" id="step-processing">
+            <div class="step-icon"><i class="fas fa-cogs"></i></div>
+            <div class="step-label">AI分析</div>
+            <div class="step-status">等待中...</div>
+          </div>
+          <div class="progress-step" id="step-complete">
+            <div class="step-icon"><i class="fas fa-check-circle"></i></div>
+            <div class="step-label">审核完成</div>
+            <div class="step-status">等待中...</div>
+          </div>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar" id="auditProgressBar"></div>
+        </div>
+        <div class="file-info">
+          <p><i class="fas fa-file"></i> 文件名: <span id="auditFileName"></span></p>
+          <p><i class="fas fa-weight"></i> 大小: <span id="auditFileSize"></span></p>
+        </div>
+      </div>
+      <div class="audit-footer">
+        <button class="btn cancel-btn" id="cancelAudit">取消审核</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
