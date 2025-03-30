@@ -29,8 +29,8 @@ app = Flask(__name__,
 )
 CORS(app, supports_credentials=True)
 
-# 配置文件上传路径 - 适配Vercel环境
-UPLOAD_FOLDER = '/tmp' if os.environ.get('VERCEL') == '1' else os.path.join(current_dir, 'uploads')
+# 配置文件上传路径 - Vercel环境强制使用/tmp
+UPLOAD_FOLDER = '/tmp'
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
@@ -279,12 +279,10 @@ def upload_file():
         tasks[task_id]['progress'] = 15
         tasks[task_id]['message'] = '读取文件内容...'
         
-        # 启动异步处理线程
-        thread = threading.Thread(target=process_file_async, args=(task_id, file_path, filename))
-        thread.daemon = True
-        thread.start()
+        # 直接处理文件(移除线程)
+        process_file_async(task_id, file_path, filename)
         
-        # 立即返回任务ID
+        # 返回任务ID
         return jsonify({
             'message': '文件上传成功，开始处理',
             'filename': filename,
@@ -509,19 +507,14 @@ def export_report():
             with open(temp_html, 'w', encoding='utf-8') as f:
                 f.write(html_content)
             
-            # 配置wkhtmltopdf选项
-            try:
-                # 尝试找出环境中的wkhtmltopdf路径
-                if os.environ.get('VERCEL') == '1':
-                    # Vercel环境下不使用配置
-                    config = None
-                elif os.name == 'nt':  # Windows
-                    config = pdfkit.configuration(wkhtmltopdf=r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe')
-                else:  # Linux/Mac
-                    config = pdfkit.configuration(wkhtmltopdf='/usr/local/bin/wkhtmltopdf')
-            except Exception as e:
-                print(f"wkhtmltopdf配置错误: {str(e)}")
-                config = None
+            # Vercel环境下禁用PDF生成，直接返回HTML
+            if os.environ.get('VERCEL') == '1':
+                return send_file(
+                    io.BytesIO(html_content.encode('utf-8')),
+                    mimetype='text/html',
+                    as_attachment=True,
+                    download_name=f'绿色贷款审核报告_{datetime.now().strftime("%Y%m%d_%H%M%S")}.html'
+                )
             
             # 配置选项
             options = {
